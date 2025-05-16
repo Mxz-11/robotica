@@ -43,7 +43,7 @@ loop ()
   doc["fire"] = fire;
   serializeJson (doc, Serial);
   Serial.println ();
-  delay (5000);
+  delay (30000);
 }
 
 bool
