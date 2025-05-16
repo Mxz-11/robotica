@@ -7,6 +7,7 @@ import (
 	"data_treatment/shared"
 	"database/sql"
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/goccy/go-json"
@@ -64,7 +65,7 @@ func connectToDB(db_file string) (*sql.DB, error) {
 }
 
 func insertData(db *sql.DB, temperature float64, humidity float64) {
-	insert_query := `INSERT INTO winery_data (temperature, humidity) VALUES (?, ?, ?)`
+	insert_query := `INSERT INTO winery_data (temperature, humidity) VALUES (?, ?)`
 	_, err := db.Exec(insert_query, temperature, humidity)
 	if err != nil {
 		log_handler.Error("Error inserting data: %s", err)
@@ -93,7 +94,18 @@ func JsonToData(data string) {
 			log_handler.Error("Error loading the config: %s", err)
 			os.Exit(1)
 		}
-		db, err := connectToDB(val.(string))
+		err = os.MkdirAll(val.(string), 0755)
+		if err != nil {
+			log_handler.Error("Error creating database folder: %s", err)
+			return
+		}
+		filename, err := config_handler.GetData(shared.Consts, "DB_FILENAME", config_handler.TYPE_STRING)
+		if err != nil {
+			log_handler.Error("Error loading the config: %s", err)
+			os.Exit(1)
+		}
+		full_path := filepath.Join(val.(string), filename.(string))
+		db, err := connectToDB(full_path)
 		if err != nil {
 			log_handler.Error("Error connecting to database: %s", err)
 			return

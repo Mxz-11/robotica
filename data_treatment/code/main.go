@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	log_path_raw, err := config_handler.GetData(shared.Consts, "DEFAULT_LOG_PATH", config_handler.TYPE_STRING)
 	if err != nil {
 		log_handler.Fatal("DEFAULT_LOG_PATH must be string")
