@@ -4,49 +4,73 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define DHTTYPE DHT22
-#define PIR_0_PIN 2
-#define DHT_0_PIN 7
-#define FIRE_0_PIN A0
-
-DHT_Unified dht(DHT_0_PIN, DHTTYPE);
-StaticJsonDocument<256> doc;
-
-void setup()
+enum pins
 {
-  Serial.begin(9600);
-  pinMode(PIR_0_PIN, INPUT);
-  pinMode(FIRE_0_PIN, INPUT);
-  dht.begin();
-  Serial.println("Sistema iniciado.");
+  PIR_0_PIN = 2,
+  DHT_0_PIN = 7,
+  FIRE_0_PIN = A0
+};
+
+#define DHTTYPE DHT22
+DHT_Unified dht (pins::DHT_0_PIN, DHTTYPE);
+JsonDocument doc;
+
+bool get_fire ();
+bool get_presence ();
+float get_temperature ();
+float get_humidity ();
+
+void
+setup ()
+{
+  Serial.begin (9600);
+  pinMode (pins::PIR_0_PIN, INPUT);
+  pinMode (pins::FIRE_0_PIN, INPUT);
+  dht.begin ();
 }
 
-void loop()
+void
+loop ()
 {
-  // --------- FUEGO ---------
-  int fire_reading = analogRead(FIRE_0_PIN);
-  bool fire = fire_reading < 300;
-
-  // --------- PRESENCIA ---------
-  bool presence = digitalRead(PIR_0_PIN) == HIGH;
-
-  // --------- TEMPERATURA Y HUMEDAD ---------
-  sensors_event_t temp_event, hum_event;
-  dht.temperature().getEvent(&temp_event);
-  dht.humidity().getEvent(&hum_event);
-
-  float temp = !isnan(temp_event.temperature) ? temp_event.temperature : 0.0;
-  float hum = !isnan(hum_event.relative_humidity) ? hum_event.relative_humidity : 0.0;
-
-  // --------- JSON OUTPUT ---------
-  doc.clear();
+  bool fire = get_fire ();
+  bool presence = get_presence ();
+  float temp = get_temperature ();
+  float hum = get_humidity ();
+  doc.clear ();
   doc["temperature"] = temp;
   doc["humidity"] = hum;
   doc["presence"] = presence;
   doc["fire"] = fire;
+  serializeJson (doc, Serial);
+  Serial.println ();
+  delay (5000);
+}
 
-  serializeJson(doc, Serial);
-  Serial.println();
+bool
+get_fire ()
+{
+  return analogRead (pins::FIRE_0_PIN) < 300;
+}
 
-  delay(35000);
+bool
+get_presence ()
+{
+  return digitalRead (pins::PIR_0_PIN) == HIGH;
+}
+
+float
+get_temperature ()
+{
+  sensors_event_t temp_event;
+  dht.temperature ().getEvent (&temp_event);
+  return !isnan (temp_event.temperature) ? temp_event.temperature : 0.0f;
+}
+
+float
+get_humidity ()
+{
+  sensors_event_t hum_event;
+  dht.humidity ().getEvent (&hum_event);
+  return !isnan (hum_event.relative_humidity) ? hum_event.relative_humidity
+                                              : 0.0f;
 }
