@@ -10,6 +10,7 @@ winery_project/.vscode/launch.json
 winery_project/.vscode/ipch
 
 # data_treatment
-data_treatment/resources
+data_treatment/resources/mail.conf
+data_treatment/resources/send_to.conf
 data_treatment/logs
 data_treatment/ddbb
