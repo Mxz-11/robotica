@@ -1,0 +1,15 @@
+# General
+.DS_Store
+.vscode
+
+# winery_project
+winery_project/.pio
+winery_project/.vscode/.browse.c_cpp.db*
+winery_project/.vscode/c_cpp_properties.json
+winery_project/.vscode/launch.json
+winery_project/.vscode/ipch
+
+# data_treatment
+data_treatment/resources
+data_treatment/logs
+data_treatment/ddbb
