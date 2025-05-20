@@ -4,6 +4,12 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
+typedef struct toggle_helper
+{
+  bool last_value;
+  bool toggle_state;
+} toggle_helper;
+
 enum pins
 {
   PIR_0_PIN = 2,
@@ -14,7 +20,11 @@ enum pins
 #define DHTTYPE DHT22
 DHT_Unified dht (pins::DHT_0_PIN, DHTTYPE);
 JsonDocument doc;
+toggle_helper fire_toggle = { false, false };
+toggle_helper presence_toggle = { false, false };
 
+void send_fire ();
+void send_presence ();
 bool get_fire ();
 bool get_presence ();
 float get_temperature ();
@@ -32,18 +42,44 @@ setup ()
 void
 loop ()
 {
-  bool fire = get_fire ();
-  bool presence = get_presence ();
+  send_fire ();
+  send_presence ();
   float temp = get_temperature ();
   float hum = get_humidity ();
-  doc.clear ();
   doc["temperature"] = temp;
   doc["humidity"] = hum;
-  doc["presence"] = presence;
-  doc["fire"] = fire;
   serializeJson (doc, Serial);
   Serial.println ();
-  delay (30000);
+  doc.clear ();
+  delay (5000);
+}
+
+void
+send_fire ()
+{
+  bool fire = get_fire ();
+  if ((fire && !fire_toggle.last_value) || !fire)
+    {
+      doc["fire"] = fire;
+      serializeJson (doc, Serial);
+      Serial.println ();
+      doc.clear ();
+    }
+  fire_toggle.last_value = fire;
+}
+
+void
+send_presence ()
+{
+  bool presence = get_presence ();
+  if ((presence && !presence_toggle.last_value) || !presence)
+    {
+      doc["presence"] = presence;
+      serializeJson (doc, Serial);
+      Serial.println ();
+      doc.clear ();
+    }
+  presence_toggle.last_value = presence;
 }
 
 bool
