@@ -46,7 +46,6 @@ def update_image(path):
         print(f"Error loading image {path}: {e}")
 
 def center_widgets():
-    # Calcular tamaño de texto dinámicamente
     text_label.update_idletasks()
     text_width = text_label.winfo_width()
     total_width = image_width + gap + text_width
@@ -57,13 +56,26 @@ def center_widgets():
 
 def float_image(offset=0, direction=1):
     new_offset = offset + direction
-    image_label.place_configure(y=center_y + new_offset)  # solo imagen
+    image_label.place_configure(y=center_y + new_offset)
     if abs(new_offset) >= 10:
         direction *= -1
     root.after(50, lambda: float_image(new_offset, direction))
 
 def exit_app(event):
     root.destroy()
+
+def poll_for_new_data():
+    global items, current_index, last_data
+    new_data = get_latest_data()
+    if new_data and new_data != last_data:
+        print("New data detected, updating display...")
+        last_data = new_data
+        items = prepare_items(new_data)
+        current_index = 0
+        message_var.set(items[current_index][0])
+        update_image(items[current_index][1])
+        center_widgets()
+    root.after(5000, poll_for_new_data)  # Vuelve a comprobar en 5 segundos
 
 # --- INTERFAZ ---
 root = tk.Tk()
@@ -85,10 +97,10 @@ text_label = tk.Label(root, font=("Arial", 50),
 message_var = tk.StringVar()
 text_label.config(textvariable=message_var)
 
-# Datos
-latest_data = get_latest_data()
-if latest_data:
-    items = prepare_items(latest_data)
+# Datos iniciales
+last_data = get_latest_data()
+if last_data:
+    items = prepare_items(last_data)
 else:
     items = [("No data available", "error.png")]
 
@@ -98,5 +110,6 @@ update_image(items[current_index][1])
 center_widgets()
 
 float_image()
+poll_for_new_data()  # Empieza la comprobación periódica
 root.bind("<Button-1>", show_next_message)
 root.mainloop()
