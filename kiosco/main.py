@@ -9,7 +9,7 @@ def get_latest_data():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(f"""
-        SELECT co2, temperature, humidity, date
+        SELECT temperature, humidity, date
         FROM {TABLE_NAME}
         ORDER BY datetime(date) DESC
         LIMIT 1
@@ -19,9 +19,8 @@ def get_latest_data():
     return row
 
 def prepare_items(data):
-    co2, temp, hum, date = data
+    temp, hum, date = data
     return [
-        ("CO₂: {} ppm".format(co2), "co.png"),
         ("Temperature: {} °C".format(temp), "temp.png"),
         ("Humidity: {} %".format(hum), "hum.png"),
         ("Date: {}".format(date), "cal.png")
@@ -75,7 +74,7 @@ def poll_for_new_data():
         message_var.set(items[current_index][0])
         update_image(items[current_index][1])
         center_widgets()
-    root.after(5000, poll_for_new_data)  # Vuelve a comprobar en 5 segundos
+    root.after(5000, poll_for_new_data)
 
 # --- INTERFAZ ---
 root = tk.Tk()
@@ -110,6 +109,6 @@ update_image(items[current_index][1])
 center_widgets()
 
 float_image()
-poll_for_new_data()  # Empieza la comprobación periódica
+poll_for_new_data()
 root.bind("<Button-1>", show_next_message)
 root.mainloop()
