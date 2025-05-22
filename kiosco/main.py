@@ -2,7 +2,7 @@ import sqlite3
 import tkinter as tk
 from PIL import Image, ImageTk
 
-DB_PATH = "~/Desktop/robotica/data_treatment/ddbb/winery.db"
+DB_PATH = "/home/mxz-11/Desktop/robotica/data_treatment/ddbb/winery.db"
 TABLE_NAME = "winery_data"
 
 def get_latest_data():
